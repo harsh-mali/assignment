@@ -1,9 +1,8 @@
-"use client"; // This is a Client Component
+"use client";
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-// A simple cookie utility
 function setCookie(name, value, days) {
     let expires = "";
     if (days) {
@@ -32,7 +31,7 @@ export default function LoginPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Login failed');
 
-            setCookie('token', data.token, 1 / 3); // Store token in a cookie for 8 hours
+            setCookie('token', data.token, 1 / 3);
             router.push('/notes');
         } catch (err) {
             setError(err.message);
@@ -40,19 +39,39 @@ export default function LoginPage() {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-            <h1>Login</h1>
+        <div className="auth-container">
+            <h1>Sign In</h1>
             <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Email</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} placeholder="admin@acme.test" />
+                <div className="form-group">
+                    <label className="form-label" htmlFor="email">Email Address</label>
+                    <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="form-input"
+                        placeholder="admin@acme.test"
+                    />
                 </div>
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>Password</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} placeholder="password" />
+                <div className="form-group">
+                    <label className="form-label" htmlFor="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="form-input"
+                        placeholder="••••••••"
+                    />
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px' }}>Login</button>
+
+                <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '2rem' }}>
+                    Continue
+                </button>
+
+                {error && <p className="error-message">{error}</p>}
             </form>
         </div>
     );

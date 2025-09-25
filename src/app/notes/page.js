@@ -1,10 +1,9 @@
-"use client"; // This is a Client Component
+"use client";
 
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// Cookie utilities
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -14,6 +13,13 @@ function getCookie(name) {
 function deleteCookie(name) {
     document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
+
+const TrashIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.22-2.365.468a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.576l.84-10.518.149.022a.75.75 0 10.23-1.482A41.03 41.03 0 0014 4.193v-.443A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+    </svg>
+);
+
 
 export default function NotesPage() {
     const [notes, setNotes] = useState([]);
@@ -73,7 +79,7 @@ export default function NotesPage() {
             const data = await res.json();
             alert(data.error || "Upgrade failed");
         } else {
-            alert('Upgrade successful!');
+            alert('Upgrade successful! You now have unlimited notes.');
             setError('');
         }
     };
@@ -84,34 +90,58 @@ export default function NotesPage() {
     };
 
     return (
-        <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1>My Notes ({userInfo?.tenantSlug})</h1>
-                <button onClick={handleLogout}>Logout</button>
-            </div>
-            <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3>Create New Note</h3>
+        <div className="container">
+            <header className="notes-header">
+                <h2>{userInfo?.tenantSlug} Workspace</h2>
+                <button onClick={handleLogout} className="btn btn-secondary">Logout</button>
+            </header>
+
+            <div style={{ marginBottom: '3rem' }}>
                 <form onSubmit={handleCreateNote}>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Note Title" required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-                    <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Note Content" style={{ width: '100%', padding: '8px', height: '100px', marginBottom: '10px' }} />
-                    <button type="submit">Add Note</button>
+                    <div className="form-group">
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="New Note Title"
+                            required
+                            className="form-input"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <textarea
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder="Start writing..."
+                            className="form-input"
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Create Note</button>
                 </form>
-                {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+                {error && <p className="error-message">{error}</p>}
             </div>
-            {userInfo?.role === 'Admin' && <button onClick={handleUpgrade} style={{ marginBottom: '20px' }}>Upgrade to Pro</button>}
-            <h2>Existing Notes</h2>
+
+            {userInfo?.role === 'Admin' && (
+                <div style={{ textAlign: 'center', margin: '3rem 0' }}>
+                    <button onClick={handleUpgrade} className="btn btn-secondary">Upgrade to Pro Plan</button>
+                </div>
+            )}
+
+            <h2>Notes</h2>
             {notes?.length > 0 ? (
                 notes.map((note) => (
-                    <div key={note.id} style={{ padding: '15px', border: '1px solid #eee', borderRadius: '4px', marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div key={note.id} className="note-card">
+                        <div className="note-card-header">
                             <h3>{note.title}</h3>
-                            <button onClick={() => handleDelete(note.id)} style={{ backgroundColor: '#ff4d4d', color: 'white' }}>Delete</button>
+                            <button onClick={() => handleDelete(note.id)} className="btn btn-icon">
+                                <TrashIcon />
+                            </button>
                         </div>
                         <p>{note.content}</p>
                         <small>Last updated: {new Date(note.updatedAt).toLocaleString()}</small>
                     </div>
                 ))
-            ) : (<p>No notes found. Create one above!</p>)}
+            ) : (<p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem 0' }}>Your notes will appear here.</p>)}
         </div>
     );
 }
