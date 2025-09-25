@@ -1,5 +1,5 @@
 import { getUserSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { getDb, initializeDb } from '@/lib/db'; // <-- Import initializeDb
 import { NextResponse } from 'next/server';
 
 async function checkNoteAccess(noteId, tenantId) {
@@ -10,6 +10,7 @@ async function checkNoteAccess(noteId, tenantId) {
 }
 
 export async function GET(req, { params }) {
+    await initializeDb(); // <-- ADD THIS LINE
     const session = await getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -20,9 +21,11 @@ export async function GET(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
+    await initializeDb(); // <-- ADD THIS LINE
     const session = await getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // We call initializeDb before this, so the checkNoteAccess will now find the DB
     const note = await checkNoteAccess(params.id, session.tenantId);
     if (!note) return NextResponse.json({ error: 'Note not found or access denied' }, { status: 404 });
 
@@ -32,5 +35,3 @@ export async function DELETE(req, { params }) {
 
     return new NextResponse(null, { status: 204 });
 }
-
-// PUT for updates can be added here following the same pattern

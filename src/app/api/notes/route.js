@@ -1,8 +1,9 @@
 import { getUserSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { getDb, initializeDb } from '@/lib/db'; // <-- Import initializeDb
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+    await initializeDb(); // <-- ADD THIS LINE
     const session = await getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -14,6 +15,7 @@ export async function GET() {
 }
 
 export async function POST(req) {
+    await initializeDb(); // <-- ADD THIS LINE
     const session = await getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -21,8 +23,7 @@ export async function POST(req) {
     if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 });
 
     const db = await getDb();
-
-    // Subscription Gating Logic
+    // ... rest of the function is the same
     const tenant = await db.get('SELECT plan FROM tenants WHERE id = ?', session.tenantId);
     if (tenant.plan === 'free') {
         const noteCount = await db.get('SELECT COUNT(id) as count FROM notes WHERE tenantId = ?', session.tenantId);
@@ -31,12 +32,10 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Free plan note limit reached' }, { status: 403 });
         }
     }
-
     const result = await db.run(
         'INSERT INTO notes (title, content, tenantId) VALUES (?, ?, ?)',
         title, content || '', session.tenantId
     );
-
     const newNote = await db.get('SELECT * FROM notes WHERE id = ?', result.lastID);
     await db.close();
     return NextResponse.json({ note: newNote }, { status: 201 });

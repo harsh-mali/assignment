@@ -1,8 +1,9 @@
 import { getUserSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { getDb, initializeDb } from '@/lib/db'; // <-- Import initializeDb
 import { NextResponse } from 'next/server';
 
 export async function POST(req, { params }) {
+    await initializeDb(); // <-- ADD THIS LINE
     const session = await getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
